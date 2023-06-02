@@ -19,7 +19,7 @@ pipeline {
                 script {
                     def timestamp = new Date().format("yyyy-MM-dd-HH-mm")
                     def folderName = "code_${timestamp}"
-                    sh "cp /home/ubuntu/${folderName}/${folderName}.zip /var/www/html/"
+                    sh "sudo cp /home/ubuntu/${folderName}/${folderName}.zip /var/www/html/"
                     sh "cd /var/www/html && unzip -o ${folderName}.zip"
                 }
             }
