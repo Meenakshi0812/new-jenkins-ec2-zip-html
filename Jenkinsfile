@@ -4,8 +4,8 @@ pipeline {
     stages {
         stage('SSH to Remote Server') {
             steps {
-                sshagent(['ssh-application-server']) {
-                    sh 'ssh ubuntu@54.87.141.198'
+                sshagent(credentials: ['ssh-application-server']) {
+                    sh 'ssh -o StrictHostKeyChecking=no ubuntu@54.87.141.198'
                 }
             }
         }
@@ -22,7 +22,7 @@ pipeline {
         
         stage('Copy Code to /var/www/html') {
             steps {
-                sshagent(['ssh-application-server']) {
+                sshagent(credentials: ['ssh-application-server']) {
                     sh 'scp ${dateTime}.zip user@54.87.141.198:/var/www/html'
                 }
             }
@@ -30,16 +30,16 @@ pipeline {
         
         stage('Unzip Code') {
             steps {
-                sshagent(['ssh-application-server']) {
-                    sh "ssh ubuntu@54.87.141.198 'cd /var/www/html && unzip ${dateTime}.zip'"
+                sshagent(credentials: ['ssh-application-server']) {
+                    sh "ssh -o StrictHostKeyChecking=no ubuntu@54.87.141.198 'cd /var/www/html && unzip ${dateTime}.zip'"
                 }
             }
         }
         
         stage('Create Softlink') {
             steps {
-                sshagent(['ssh-application-server']) {
-                    sh "ssh ubuntu@54.87.141.198 'ln -s /var/www/html/repo /var/www/html/latest'"
+                sshagent(credentials: ['ssh-application-server']) {
+                    sh "ssh -o StrictHostKeyChecking=no ubuntu@54.87.141.198 'ln -s /var/www/html/repo /var/www/html/latest'"
                 }
             }
         }
