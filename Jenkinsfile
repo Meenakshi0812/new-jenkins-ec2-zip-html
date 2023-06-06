@@ -18,7 +18,8 @@ pipeline {
                     def zipFileName = "${folderName}.zip"
 
                     sshagent(credentials: ['ssh-jenkins-private-key']) {
-                        sh "git branch: 'main', url: 'https://github.com/Meenakshi0812/new-jenkins-ec2-zip-html.git', directory: \"/home/ubuntu/${folderName}\""
+                        checkout([$class: 'GitSCM', branches: [[name: 'main']], userRemoteConfigs: [[url: 'https://github.com/Meenakshi0812/new-jenkins-ec2-zip-html.git']]])
+
                         sh "ssh ubuntu@75.101.201.53 'cd /home/ubuntu && zip -r ${zipFileName} ${folderName}/*'"
                         sh "scp -o StrictHostKeyChecking=no /home/ubuntu/${zipFileName} ubuntu@75.101.201.53:~/var/www/html/"
                         sh "ssh ubuntu@75.101.201.53 'unzip -o ~/var/www/html/${zipFileName} -d /var/www/html'"
