@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('SSH Agent Setup') {
             steps {
-                sshagent(['ssh-application-server']) {
+                sshagent(['ssh-jenkins-private-key']) {
                     sh 'echo "SSH agent successfully set up"'
                 }
             }
