@@ -5,6 +5,7 @@ pipeline {
         stage('SSH to Remote Server') {
             steps {
                 sshagent(credentials: ['ssh-application-server']) {
+                    sh 'ssh-keyscan -H 54.87.141.198 >> ~/.ssh/known_hosts'
                     sh 'ssh -o StrictHostKeyChecking=no ubuntu@54.87.141.198'
                 }
             }
