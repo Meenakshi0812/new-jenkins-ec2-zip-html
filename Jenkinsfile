@@ -1,51 +1,46 @@
 pipeline {
     agent any
-
+    
     stages {
-        stage('SSH Agent Setup') {
+        stage('SSH to Remote Server') {
             steps {
                 sshagent(['ssh-application-server']) {
-                    sh 'echo "SSH agent successfully set up"'
+                    sh 'ssh ubuntu@54.87.141.198'
                 }
             }
         }
-
-        stage('Pull and Zip Code') {
+        
+        stage('Clone Git Repo as Zip') {
             steps {
                 script {
-                    def timestamp = new Date().format("yyyy-MM-dd-HH-mm")
-                    def folderName = "code_${timestamp}"
-                    sh """
-                        ssh -o StrictHostKeyChecking=no ubuntu@54.87.141.198 "rm -rf /home/ubuntu/${folderName}"
-                        ssh -o StrictHostKeyChecking=no ubuntu@54.87.141.198 "cd /home/ubuntu && git clone https://github.com/Meenakshi0812/new-jenkins-ec2-zip-html.git ${folderName}"
-                        ssh -o StrictHostKeyChecking=no ubuntu@54.87.141.198 "cd /home/ubuntu/${folderName} && zip -r ${folderName}.zip ./*"
-                    """
+                    def dateTime = new Date().format('yyyyMMdd_HHmmss')
+                    sh "git clone https://github.com/example/repo.git"
+                    sh "zip -r ${dateTime}.zip repo"
                 }
             }
         }
-
-        stage('Copy Zip and Unzip') {
+        
+        stage('Copy Code to /var/www/html') {
             steps {
-                script {
-                    def timestamp = new Date().format("yyyy-MM-dd-HH-mm")
-                    def folderName = "code_${timestamp}"
-                    sh """
-                        ssh -o StrictHostKeyChecking=no ubuntu@54.87.141.198 "sudo cp /home/ubuntu/${folderName}/${folderName}.zip /var/www/html/"
-                        ssh -o StrictHostKeyChecking=no ubuntu@54.87.141.198 "cd /var/www/html && unzip -o ${folderName}.zip"
-                    """
+                sshagent(['ssh-application-server']) {
+                    sh 'scp ${dateTime}.zip user@54.87.141.198:/var/www/html'
                 }
             }
         }
-
-        stage('Create Soft Link') {
+        
+        stage('Unzip Code') {
             steps {
-                sh 'ssh -o StrictHostKeyChecking=no ubuntu@54.87.141.198 "ln -s /var/www/html/*.zip /var/www/html/application"'
+                sshagent(['ssh-application-server']) {
+                    sh "ssh ubuntu@54.87.141.198 'cd /var/www/html && unzip ${dateTime}.zip'"
+                }
             }
         }
-
-        stage('Expose to Internet') {
+        
+        stage('Create Softlink') {
             steps {
-                sh 'ssh -o StrictHostKeyChecking=no ubuntu@54.87.141.198 "sudo cp /var/www/html/index.html /var/www/html/"'
+                sshagent(['ssh-application-server']) {
+                    sh "ssh ubuntu@54.87.141.198 'ln -s /var/www/html/repo /var/www/html/latest'"
+                }
             }
         }
     }
