@@ -17,11 +17,13 @@ pipeline {
                     def folderName = "code_${timestamp}"
                     def zipFileName = "${folderName}.zip"
 
-                    git branch: 'main', url: 'https://github.com/Meenakshi0812/new-jenkins-ec2-zip-html.git', directory: "/home/ubuntu/${folderName}"
-                    sh "ssh -o StrictHostKeyChecking=no ubuntu@75.101.201.53 'cd /home/ubuntu && zip -r ${zipFileName} ${folderName}/*'"
-                    sh "scp -o StrictHostKeyChecking=no /home/ubuntu/${zipFileName} ubuntu@75.101.201.53:~/var/www/html/"
-                    sh "ssh -o StrictHostKeyChecking=no ubuntu@75.101.201.53 'unzip -o ~/var/www/html/${zipFileName} -d /var/www/html'"
-                    sh "ssh -o StrictHostKeyChecking=no ubuntu@75.101.201.53 'ln -sfn /var/www/html/${folderName} /path/to/softlink'"
+                    sshagent(credentials: ['ssh-jenkins-private-key']) {
+                        sh "git branch: 'main', url: 'https://github.com/Meenakshi0812/new-jenkins-ec2-zip-html.git', directory: \"/home/ubuntu/${folderName}\""
+                        sh "ssh ubuntu@75.101.201.53 'cd /home/ubuntu && zip -r ${zipFileName} ${folderName}/*'"
+                        sh "scp -o StrictHostKeyChecking=no /home/ubuntu/${zipFileName} ubuntu@75.101.201.53:~/var/www/html/"
+                        sh "ssh ubuntu@75.101.201.53 'unzip -o ~/var/www/html/${zipFileName} -d /var/www/html'"
+                        sh "ssh ubuntu@75.101.201.53 'ln -sfn /var/www/html/${folderName} /path/to/softlink'"
+                    }
                 }
             }
         }
