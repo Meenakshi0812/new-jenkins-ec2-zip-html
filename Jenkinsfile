@@ -1,46 +1,28 @@
 pipeline {
     agent any
-
+    
     stages {
-        stage('SSH Agent Setup') {
+        stage('Setup SSH Agent') {
             steps {
-                sshagent(['ssh-jenkins-private-key']) {
+                sshagent(credentials: ['ssh-jenkins-private-key']) {
                     sh 'echo "SSH agent successfully set up"'
                 }
             }
         }
-        stage('Pull and Zip Code') {
+        
+        stage('Deploy to EC2') {
             steps {
                 script {
                     def timestamp = new Date().format("yyyy-MM-dd-HH-mm")
                     def folderName = "code_${timestamp}"
-                    sh "rm -rf /home/ubuntu/${folderName}"
-                    sh "cd /home/ubuntu && git clone https://github.com/Meenakshi0812/new-jenkins-ec2-zip-html.git ${folderName}"
-                    sh "cd /home/ubuntu/${folderName} && zip -r ${folderName}.zip ./*"
+                    def zipFileName = "${folderName}.zip"
+                    
+                    git branch: 'main', url: 'https://github.com/Meenakshi0812/new-jenkins-ec2-zip-html.git', directory: "/home/ubuntu/${folderName}"
+                    sh "ssh ubuntu@75.101.201.53 'cd /home/ubuntu && zip -r ${zipFileName} ${folderName}/*'"
+                    sh "scp -o StrictHostKeyChecking=no /home/ubuntu/${zipFileName} ubuntu@75.101.201.53:~/var/www/html/"
+                    sh "ssh ubuntu@75.101.201.53 'unzip -o ~/var/www/html/${zipFileName} -d /var/www/html'"
+                    sh "ssh ubuntu@75.101.201.53 'ln -sfn /var/www/html/${folderName} /path/to/softlink'"
                 }
-            }
-        }
-
-        stage('Copy Zip and Unzip') {
-            steps {
-                script {
-                    def timestamp = new Date().format("yyyy-MM-dd-HH-mm")
-                    def folderName = "code_${timestamp}"
-                    sh "sudo cp /home/ubuntu/${folderName}/${folderName}.zip /var/www/html/"
-                    sh "cd /var/www/html && unzip -o ${folderName}.zip"
-                }
-            }
-        }
-
-        stage('Create Soft Link') {
-            steps {
-                sh 'ln -s /var/www/html/*.zip /var/www/html/application'
-            }
-        }
-
-        stage('Expose to Internet') {
-            steps {
-                sh 'sudo cp /var/www/html/index.html /var/www/html/'
             }
         }
     }
