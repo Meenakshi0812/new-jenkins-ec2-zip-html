@@ -20,10 +20,10 @@ pipeline {
                     sshagent(credentials: ['ssh-jenkins-private-key']) {
                         checkout([$class: 'GitSCM', branches: [[name: 'main']], userRemoteConfigs: [[url: 'https://github.com/Meenakshi0812/new-jenkins-ec2-zip-html.git']]])
 
-                        sh "ssh ubuntu@75.101.201.53 'cd /home/ubuntu && zip -r ${zipFileName} ${folderName}/*'"
-                        sh "scp -o StrictHostKeyChecking=no /home/ubuntu/${zipFileName} ubuntu@75.101.201.53:~/var/www/html/"
-                        sh "ssh ubuntu@75.101.201.53 'unzip -o ~/var/www/html/${zipFileName} -d /var/www/html'"
-                        sh "ssh ubuntu@75.101.201.53 'ln -sfn /var/www/html/${folderName} /path/to/softlink'"
+                        sh "ssh ubuntu@54.82.44.231 'cd /home/ubuntu && zip -r ${zipFileName} ${folderName}/*'"
+                        sh "scp -o StrictHostKeyChecking=no /home/ubuntu/${zipFileName} ubuntu@54.82.44.231:~/var/www/html/"
+                        sh "ssh ubuntu@54.82.44.231 'unzip -o ~/var/www/html/${zipFileName} -d /var/www/html'"
+                        sh "ssh ubuntu@54.82.44.231 'ln -sfn /var/www/html/${folderName} /path/to/softlink'"
                     }
                 }
             }
