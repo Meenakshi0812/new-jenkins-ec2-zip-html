@@ -1,7 +1,3 @@
-Executed successfully
-
-
-
 pipeline {
     agent any
 
