@@ -15,6 +15,7 @@ pipeline {
             steps {
                 sshagent(['remote-ssh']) {
                     script {
+                        def timestamp = new Date().format("yyyy-MM-dd-HH-mm")
                         def folderName = "code_${timestamp}"
                         def zipFileName = "${folderName}.zip"
 
