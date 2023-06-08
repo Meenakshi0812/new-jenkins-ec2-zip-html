@@ -1,29 +1,29 @@
+Executed successfully
+
+
+
 pipeline {
     agent any
 
     stages {
-        stage('Setup SSH Agent') {
+        stage('Clone Git Repository') {
             steps {
-                sshagent(credentials: ['ssh-jenkins-private-key']) {
-                    sh 'echo "SSH agent successfully set up"'
-                }
+                git branch: 'main', url: 'https://github.com/Meenakshi0812/new-jenkins-ec2-zip-html.git'
             }
         }
 
-        stage('Deploy to EC2') {
+        stage('deploy to ec2') {
             steps {
-                script {
-                    def timestamp = new Date().format("yyyy-MM-dd-HH-mm")
-                    def folderName = "code_${timestamp}"
-                    def zipFileName = "${folderName}.zip"
+                sshagent(['remote-ssh']) {
+                    script {
+                        def timestamp = new Date().format("yyyy-MM-dd-HH-mm")
+                        def folderName = "code_${timestamp}"
+                        def zipFileName = "${folderName}.zip"
 
-                    sshagent(credentials: ['ssh-jenkins-private-key']) {
-                        checkout([$class: 'GitSCM', branches: [[name: 'main']], userRemoteConfigs: [[url: 'https://github.com/Meenakshi0812/new-jenkins-ec2-zip-html.git']]])
-
-                        sh "ssh -o StrictHostKeyChecking=no ubuntu@54.82.44.231 'cd /home/ubuntu && zip -r ${zipFileName} ${folderName}/*'"
-                        sh "scp -o StrictHostKeyChecking=no /home/ubuntu/${zipFileName} ubuntu@54.82.44.231:~/var/www/html/"
-                        sh "ssh -o StrictHostKeyChecking=no ubuntu@54.82.44.231 'unzip -o ~/var/www/html/${zipFileName} -d /var/www/html'"
-                        sh "ssh -o StrictHostKeyChecking=no ubuntu@54.82.44.231 'ln -sfn /var/www/html/${folderName} /path/to/softlink'"
+                        sh "scp -o StrictHostKeyChecking=no -r /home/ec2-user/* ubuntu@3.80.125.254:/var/www/html/${folderName}/"
+                        sh "ssh -o StrictHostKeyChecking=no ubuntu@3.80.125.254 'cd /var/www/html/${folderName} && zip -r /var/www/html/${zipFileName} *'"
+                        sh "ssh -o StrictHostKeyChecking=no ubuntu@3.80.125.254 'unzip -o /var/www/html/${zipFileName} -d /var/www/html'"
+                        sh "ssh -o StrictHostKeyChecking=no ubuntu@3.80.125.254 'ln -sfn /var/www/html/${folderName} /var/www/html/code'"
                     }
                 }
             }
