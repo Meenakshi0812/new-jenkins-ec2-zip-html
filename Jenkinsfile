@@ -8,7 +8,13 @@ pipeline {
             }
         }
 
-        stage('deploy to ec2') {
+        stage('Clone Repository to Local Machine') {
+            steps {
+                sh "git clone https://github.com/Meenakshi0812/new-jenkins-ec2-zip-html.git"
+            }
+        }
+
+        stage('Deploy to EC2') {
             steps {
                 sshagent(['remote-ssh']) {
                     script {
